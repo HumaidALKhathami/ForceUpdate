@@ -90,8 +90,8 @@ internal class ForceUpdateActivity : AppCompatActivity() {
         viewModel.installStatus.collect {
             when (it) {
                 InstallSucceeded -> finish()
-                InstallProgress -> setForceUpdateView(Installing)
                 InstallCanceled -> setForceUpdateView(InstallReady())
+                InstallProgress -> setForceUpdateView(Installing)
                 is InstallFailure -> setForceUpdateView(DownloadReady(it.message))
                 else -> Unit
             }
