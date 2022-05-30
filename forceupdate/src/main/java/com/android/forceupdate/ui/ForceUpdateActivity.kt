@@ -1,12 +1,18 @@
 package com.android.forceupdate.ui
 
+import android.content.Intent
 import android.content.pm.PackageInfo
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.Drawable
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.TypedValue
 import android.view.View
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.use
 import androidx.core.widget.ImageViewCompat
@@ -86,6 +92,20 @@ internal class ForceUpdateActivity : AppCompatActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun checkPackageInstallPermission(action: () -> (Any)) {
+        if (!packageManager.canRequestPackageInstalls()) AlertDialog.Builder(this).apply {
+            this.setTitle(applicationName)
+            this.setIcon(applicationLogo)
+            this.setMessage(getString(R.string.forceupdate_permission_message, applicationName))
+            this.setPositiveButton(R.string.forceupdate_permission_ok) { _, _ ->
+                val settings = Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES
+                startActivity(Intent(settings, Uri.parse("package:$packageName")))
+            }
+            this.show()
+        } else action()
+    }
+
     private fun getInstallStatus() = lifecycleScope.launch(Dispatchers.Main) {
         viewModel.installStatus.collect {
             when (it) {
@@ -98,6 +118,7 @@ internal class ForceUpdateActivity : AppCompatActivity() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun setForceUpdateView(state: ForceUpdateState): Unit = when (state) {
         is DownloadReady -> {
             binding.button.visibility = View.VISIBLE
@@ -109,7 +130,11 @@ internal class ForceUpdateActivity : AppCompatActivity() {
             val header = intent.getSerializableExtra(ConstantsUtils.EXTRA_HEADER) as? Pair<*, *>
             val apkLink = intent.getStringExtra(ConstantsUtils.EXTRA_APK_LINK) ?: ""
 
-            binding.button.setOnClickListener { viewModel.downloadApk(apkLink, header) }
+            binding.button.setOnClickListener {
+                checkPackageInstallPermission { viewModel.downloadApk(apkLink, header) }
+            }
+
+//            binding.button.setOnClickListener { viewModel.downloadApk(apkLink, header) }
         }
         is Downloading -> {
             binding.progressBar.isIndeterminate = state.progress == 0
@@ -124,7 +149,11 @@ internal class ForceUpdateActivity : AppCompatActivity() {
             binding.button.text = getString(R.string.forceupdate_install)
             binding.message.text = getString(R.string.forceupdate_download_completed)
 
-            binding.button.setOnClickListener { viewModel.installApk() }
+            binding.button.setOnClickListener {
+                checkPackageInstallPermission { viewModel.installApk() }
+            }
+
+//            binding.button.setOnClickListener { viewModel.installApk() }
         }
         is Installing -> {
             binding.button.visibility = View.GONE
