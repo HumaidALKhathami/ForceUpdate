@@ -17,11 +17,12 @@ internal class InstallBroadcastReceiver : BroadcastReceiver() {
 
         when (intent.getIntExtra(PackageInstaller.EXTRA_STATUS, -1)) {
             PackageInstaller.STATUS_PENDING_USER_ACTION -> {
-                val installIntent = intent.getParcelableExtra<Intent>(EXTRA_INTENT)
-                context.startActivity(installIntent?.addFlags(FLAG_ACTIVITY_NEW_TASK))
-                mutableInstallBroadcastState.value = InstallProgress
+                mutableInstallBroadcastState.value = InstallCanceled
             }
             PackageInstaller.STATUS_SUCCESS -> {
+                mutableInstallBroadcastState.value = InstallProgress
+                val installIntent = intent.getParcelableExtra<Intent>(EXTRA_INTENT)
+                context.startActivity(installIntent?.addFlags(FLAG_ACTIVITY_NEW_TASK))
                 mutableInstallBroadcastState.value = InstallSucceeded
             }
             PackageInstaller.STATUS_FAILURE_ABORTED -> {
