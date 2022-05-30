@@ -27,6 +27,9 @@ internal class InstallBroadcastReceiver : BroadcastReceiver() {
             PackageInstaller.STATUS_FAILURE_ABORTED -> {
                 mutableInstallBroadcastState.value = InstallCanceled
             }
+            PackageInstaller.STATUS_FAILURE_BLOCKED -> {
+                mutableInstallBroadcastState.value = InstallCanceled
+            }
             else -> intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)?.let { message ->
                 mutableInstallBroadcastState.value = InstallFailure(message)
             }
