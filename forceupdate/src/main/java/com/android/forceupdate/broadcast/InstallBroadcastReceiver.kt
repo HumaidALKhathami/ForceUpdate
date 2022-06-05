@@ -17,7 +17,8 @@ internal class InstallBroadcastReceiver : BroadcastReceiver() {
 
         when (intent.getIntExtra(PackageInstaller.EXTRA_STATUS, -1)) {
             PackageInstaller.STATUS_PENDING_USER_ACTION -> {
-                mutableInstallBroadcastState.value = InstallCanceled
+
+
             }
             PackageInstaller.STATUS_SUCCESS -> {
                 mutableInstallBroadcastState.value = InstallProgress
@@ -26,9 +27,6 @@ internal class InstallBroadcastReceiver : BroadcastReceiver() {
                 mutableInstallBroadcastState.value = InstallSucceeded
             }
             PackageInstaller.STATUS_FAILURE_ABORTED -> {
-                mutableInstallBroadcastState.value = InstallCanceled
-            }
-            PackageInstaller.STATUS_FAILURE -> {
                 mutableInstallBroadcastState.value = InstallCanceled
             }
             else -> intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)?.let { message ->
