@@ -13,6 +13,7 @@ import com.android.forceupdate.repository.install.InstallRepositoryImpl.InstallS
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import java.io.File
 
 internal class InstallRepositoryImpl(private val context: Context) : InstallRepository {
@@ -24,7 +25,9 @@ internal class InstallRepositoryImpl(private val context: Context) : InstallRepo
         if (localFile.exists()) startInstalling(localFile, getPendingIntent())
         else _installStatus.value = InstallFailure(context.getString(R.string.install_failed))
 
-        InstallBroadcastReceiver.installBroadcastState.collect {
+        InstallBroadcastReceiver.installBroadcastState.collectLatest {
+            if (it is InstallProgress)
+                startInstalling(localFile , getPendingIntent())
             if (it is InstallFailure || it is InstallSucceeded) localFile.delete()
             _installStatus.value = it
         }
@@ -42,7 +45,7 @@ internal class InstallRepositoryImpl(private val context: Context) : InstallRepo
         val contentResolver = context.contentResolver
 
         contentResolver.openInputStream(localFile.toUri())?.use { apkStream ->
-            val installMode = PackageInstaller.SessionParams.USER_ACTION_REQUIRED
+            val installMode = PackageInstaller.SessionParams.MODE_FULL_INSTALL
             val sessionParams = PackageInstaller.SessionParams(installMode)
             val sessionId = packageInstaller.createSession(sessionParams)
             val session = packageInstaller.openSession(sessionId)
