@@ -24,15 +24,6 @@ internal class InstallBroadcastReceiver : BroadcastReceiver() {
                 context.startActivity(installIntent?.addFlags(FLAG_ACTIVITY_NEW_TASK))
                 mutableInstallBroadcastState.value = InstallProgress
 
-                when (PackageManager.GET_PERMISSIONS){
-                    PackageManager.PERMISSION_GRANTED -> {
-                        mutableInstallBroadcastState.value = InstallProgress
-                    }
-                    PackageManager.PERMISSION_DENIED-> {
-                        mutableInstallBroadcastState.value = InstallCanceled
-                    }
-
-                }
             }
             PackageInstaller.STATUS_SUCCESS -> {
                 mutableInstallBroadcastState.value = InstallSucceeded
