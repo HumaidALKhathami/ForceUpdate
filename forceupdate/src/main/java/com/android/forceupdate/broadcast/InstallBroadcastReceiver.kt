@@ -15,7 +15,6 @@ import kotlinx.coroutines.flow.asStateFlow
 
 internal class InstallBroadcastReceiver : BroadcastReceiver() {
 
-
     override fun onReceive(context: Context, intent: Intent) {
 
         when (intent.getIntExtra(PackageInstaller.EXTRA_STATUS, -1)) {
@@ -23,21 +22,14 @@ internal class InstallBroadcastReceiver : BroadcastReceiver() {
                 val installIntent = intent.getParcelableExtra<Intent>(EXTRA_INTENT)
                 context.startActivity(installIntent?.addFlags(FLAG_ACTIVITY_NEW_TASK))
                 mutableInstallBroadcastState.value = InstallProgress
-
-                when (PackageManager.GET_PERMISSIONS){
-                    PackageManager.PERMISSION_GRANTED -> {
-                        mutableInstallBroadcastState.value = InstallProgress
-                    }
-                    PackageManager.PERMISSION_DENIED-> {
-                        mutableInstallBroadcastState.value = InstallCanceled
-                    }
-
-                }
             }
             PackageInstaller.STATUS_SUCCESS -> {
                 mutableInstallBroadcastState.value = InstallSucceeded
             }
             PackageInstaller.STATUS_FAILURE_ABORTED -> {
+                mutableInstallBroadcastState.value = InstallCanceled
+            }
+            PackageInstaller.STATUS_PENDING_USER_ACTION -> {
                 mutableInstallBroadcastState.value = InstallCanceled
             }
             else -> intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)?.let { message ->
