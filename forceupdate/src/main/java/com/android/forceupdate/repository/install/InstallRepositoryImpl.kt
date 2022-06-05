@@ -42,7 +42,7 @@ internal class InstallRepositoryImpl(private val context: Context) : InstallRepo
         val contentResolver = context.contentResolver
 
         contentResolver.openInputStream(localFile.toUri())?.use { apkStream ->
-            val installMode = PackageInstaller.SessionParams.MODE_FULL_INSTALL
+            val installMode = PackageInstaller.SessionParams.USER_ACTION_REQUIRED
             val sessionParams = PackageInstaller.SessionParams(installMode)
             val sessionId = packageInstaller.createSession(sessionParams)
             val session = packageInstaller.openSession(sessionId)
