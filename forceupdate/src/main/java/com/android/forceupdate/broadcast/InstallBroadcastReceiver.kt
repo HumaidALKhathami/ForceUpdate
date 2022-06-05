@@ -20,11 +20,12 @@ internal class InstallBroadcastReceiver : BroadcastReceiver() {
 
         when (intent.getIntExtra(PackageInstaller.EXTRA_STATUS, -1)) {
             PackageInstaller.STATUS_PENDING_USER_ACTION -> {
+                val installIntent = intent.getParcelableExtra<Intent>(EXTRA_INTENT)
+                context.startActivity(installIntent?.addFlags(FLAG_ACTIVITY_NEW_TASK))
+                mutableInstallBroadcastState.value = InstallProgress
 
                 when (PackageManager.GET_PERMISSIONS){
                     PackageManager.PERMISSION_GRANTED -> {
-                        val installIntent = intent.getParcelableExtra<Intent>(EXTRA_INTENT)
-                        context.startActivity(installIntent?.addFlags(FLAG_ACTIVITY_NEW_TASK))
                         mutableInstallBroadcastState.value = InstallProgress
                     }
                     PackageManager.PERMISSION_DENIED-> {
